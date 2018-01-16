@@ -40,6 +40,8 @@ def evaluate(ref_file, trans_file, metric, subword_option=None):
                               subword_option=subword_option)
   elif metric.lower() == "accuracy":
     evaluation_score = _accuracy(ref_file, trans_file)
+  elif metric.lower() == "length_accuracy":
+    evaluation_score = _length_accuracy(ref_file, trans_file)
   elif metric.lower() == "word_accuracy":
     evaluation_score = _word_accuracy(ref_file, trans_file)
   else:
@@ -125,6 +127,21 @@ def _accuracy(label_file, pred_file):
         label = label.strip()
         pred = pred_fh.readline().strip()
         if label == pred:
+          match += 1
+        count += 1
+  return 100 * match / count
+
+def _length_accuracy(label_file, pred_file):
+  """Compute accuracy, each line contains a label."""
+
+  with codecs.getreader("utf-8")(tf.gfile.GFile(label_file, "rb")) as label_fh:
+    with codecs.getreader("utf-8")(tf.gfile.GFile(pred_file, "rb")) as pred_fh:
+      count = 0.0
+      match = 0.0
+      for label in label_fh:
+        label = label.strip()
+        pred = pred_fh.readline().strip()
+        if len(label.split()) == len(pred.split()):
           match += 1
         count += 1
   return 100 * match / count
